@@ -1,76 +1,58 @@
 "use client";
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+
+type Status = "PRONTA" | "MECANICO" | "BO";
 
 interface Moto {
   id: number;
-  modelo: string;
-  status: string;
   placa: string;
+  modelo: string;
+  status: Status;
 }
 
+const mockMotos: Moto[] = [
+  { id: 1, placa: "ABC1234", modelo: "MOTO POP", status: "PRONTA" },
+  { id: 2, placa: "XYZ5678", modelo: "MOTO SPORT", status: "MECANICO" },
+  { id: 3, placa: "DEF9876", modelo: "MOTO E", status: "BO" },
+];
+
+const statusColors: Record<Status, string> = {
+  PRONTA: "bg-green-100 text-green-800",
+  MECANICO: "bg-yellow-100 text-yellow-800",
+  BO: "bg-red-100 text-red-800",
+};
+
 export default function ListaMotos() {
-  const [motos, setMotos] = useState<Moto[]>([]);
+  const [motos, setMotos] = useState<Moto[]>(mockMotos);
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchMotos = async () => {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/motos`);
-        if (!res.ok) throw new Error("Erro ao buscar motos");
-        const data = await res.json();
-        setMotos(data.content); 
-      } catch (error) {
-        console.error("Erro ao carregar motos:", error);
-      }
-    };
-
-    fetchMotos();
-  }, []);
-
-  const handleClick = (id: number) => {
-    router.push(`/motos/${id}`);
-  };
-
   return (
-    <section className="max-w-2xl mx-auto mt-6 p-4 bg-white shadow rounded">
-      <h2 className="text-xl font-bold text-green-700 mb-4 text-center">
-        Lista de Motos
-      </h2>
-
-      {motos.length === 0 ? (
-        <p className="text-gray-600 text-center">Nenhuma moto cadastrada.</p>
-      ) : (
-        <ul className="flex flex-col gap-3">
-          {motos.map((moto) => (
-            <li
-              key={moto.id}
-              onClick={() => handleClick(moto.id)}
-              className="p-3 rounded border hover:bg-gray-100 cursor-pointer"
-            >
-              <div className="flex justify-between items-center">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-800">
-                    {moto.modelo}
-                  </h3>
-                  <p className="text-sm text-gray-600">Placa: {moto.placa}</p>
-                </div>
-                <span
-                  className={`text-sm font-bold px-3 py-1 rounded ${
-                    moto.status === "PRONTA"
-                      ? "bg-green-200 text-green-800"
-                      : moto.status === "BO"
-                      ? "bg-red-200 text-red-800"
-                      : "bg-yellow-200 text-yellow-800"
-                  }`}
-                >
-                  {moto.status}
-                </span>
+    <section className="max-w-2xl mx-auto p-4">
+      <h2 className="text-xl font-bold mb-4 text-gray-800">Motos Cadastradas</h2>
+      <ul className="flex flex-col gap-4">
+        {motos.map((moto) => (
+          <li
+            key={moto.id}
+            onClick={() => router.push(`/motos/${moto.id}`)}
+            className="bg-white p-4 rounded shadow cursor-pointer hover:bg-gray-50 transition"
+          >
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">{moto.modelo}</h3>
+                <p className="text-sm text-gray-700">Placa: {moto.placa}</p>
               </div>
-            </li>
-          ))}
-        </ul>
-      )}
+              <span
+                className={`text-sm px-3 py-1 rounded-full font-medium ${
+                  statusColors[moto.status]
+                }`}
+              >
+                {moto.status}
+              </span>
+            </div>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
