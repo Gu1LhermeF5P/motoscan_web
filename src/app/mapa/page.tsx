@@ -1,69 +1,125 @@
 "use client";
 import { useState } from "react";
 
-type Status = "PRONTA" | "BO" | "MECANICO";
+type Status = "PRONTA" | "BO" | "MECANICO" | "VAZIA";
 
-interface Moto {
+type Moto = {
   id: number;
   zona: string;
   status: Status;
-}
-
-const zonas = ["A", "B", "C", "D", "E"];
-const cores: Record<Status, string> = {
-  PRONTA: "bg-green-500",
-  BO: "bg-red-500",
-  MECANICO: "bg-yellow-400",
 };
 
-const mockMotos: Moto[] = [
+const zonas = ["A", "B", "C", "D", "E"];
+const statusColors: Record<Status, string> = {
+  PRONTA: "bg-green-500",
+  BO: "bg-red-500",
+  MECANICO: "bg-yellow-500",
+  VAZIA: "bg-gray-300",
+};
+
+const motosMock: Moto[] = [
   { id: 1, zona: "A", status: "PRONTA" },
   { id: 2, zona: "C", status: "BO" },
   { id: 3, zona: "C", status: "BO" },
   { id: 4, zona: "E", status: "MECANICO" },
+
 ];
 
-export default function MapaMotos() {
-  const [motos] = useState<Moto[]>(mockMotos);
+export default function MapaPatio() {
+  const [filtro, setFiltro] = useState<Status | "TODOS">("TODOS");
 
-  const renderQuadrado = (zona: string, index: number) => {
-    const moto = motos.find((m) => m.zona === zona && m.id === index);
-    if (moto) {
-      return <div key={index} className={`w-8 h-8 ${cores[moto.status]} rounded`} />;
+  const getMotosPorZona = (zona: string) => {
+    const motosZona = motosMock.filter((m) => m.zona === zona);
+    const total = 5;
+    const preenchidas = [...motosZona];
+    while (preenchidas.length < total) {
+      preenchidas.push({ id: Date.now() + Math.random(), zona, status: "VAZIA" });
     }
-    return <div key={index} className="w-8 h-8 bg-gray-300 rounded" />;
+    return preenchidas;
+  };
+
+  const renderQuadrado = (moto: Moto, i: number) => {
+    if (filtro !== "TODOS" && moto.status !== filtro && moto.status !== "VAZIA") {
+      return null;
+    }
+    return (
+      <div
+        key={i}
+        className={`w-8 h-8 rounded ${statusColors[moto.status]} cursor-pointer transition hover:scale-105`}
+        title={moto.status !== "VAZIA" ? `Status: ${moto.status}` : "Vazio"}
+      />
+    );
   };
 
   return (
-    <section className="p-4 max-w-sm mx-auto text-sm">
-      <p className="font-semibold text-gray-700">Status:</p>
-      <h2 className="text-green-600 font-bold text-lg mb-2">Pátio - Filial Zona Leste</h2>
+    <div className="max-w-md mx-auto p-4 text-sm font-medium text-gray-800">
+      <h2 className="text-sm font-bold">Status:</h2>
+      <h3 className="text-lg font-bold text-green-600 mb-2">Pátio - Filial Zona Leste</h3>
 
-      <div className="flex justify-between gap-2 mb-3">
-        <button className="border px-3 py-1 rounded text-xs">PRONTA</button>
-        <button className="border px-3 py-1 rounded text-xs">BO</button>
-        <button className="border px-3 py-1 rounded text-xs">MECANICO</button>
+      <div className="flex gap-2 mb-3">
+        <button
+          onClick={() => setFiltro("PRONTA")}
+          className={`border px-3 py-1 rounded-full ${
+            filtro === "PRONTA" ? "bg-green-500 text-white" : "bg-green-100 text-green-800"
+          }`}
+        >
+          PRONTA
+        </button>
+        <button
+          onClick={() => setFiltro("BO")}
+          className={`border px-3 py-1 rounded-full ${
+            filtro === "BO" ? "bg-red-500 text-white" : "bg-red-100 text-red-800"
+          }`}
+        >
+          BO
+        </button>
+        <button
+          onClick={() => setFiltro("MECANICO")}
+          className={`border px-3 py-1 rounded-full ${
+            filtro === "MECANICO" ? "bg-yellow-500 text-white" : "bg-yellow-100 text-yellow-800"
+          }`}
+        >
+          MECANICO
+        </button>
       </div>
 
-      <button className="bg-green-500 text-white w-full py-2 rounded font-medium mb-5">
+
+      <button
+        onClick={() => setFiltro("TODOS")}
+        className="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded mb-4 transition"
+      >
         Ver todas as mtos no pátio
       </button>
 
       {zonas.map((zona) => (
         <div key={zona} className="mb-4">
-          <p className="font-semibold mb-2">Zona {zona} - Toque em uma mto para detalhes</p>
-          <div className="flex gap-2">
-            {[1, 2, 3, 4].map((i) => renderQuadrado(zona, i))}
+          <p className="mb-2 text-sm">
+            <strong>Zona {zona}</strong> - Toque em uma mto para detalhes
+          </p>
+          <div className="grid grid-cols-5 gap-2">
+            {getMotosPorZona(zona).map(renderQuadrado)}
           </div>
         </div>
       ))}
 
-      <footer className="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around py-2">
-        <span className="text-xs text-center">🏠<br />Home</span>
-        <span className="text-xs text-center">➕<br />Cadastro</span>
-        <span className="text-xs text-center">🏍️<br />Motos</span>
-        <span className="text-xs text-green-600 font-bold">🗺️<br />Mapa</span>
+      <footer className="fixed bottom-0 left-0 right-0 bg-white border-t p-2 flex justify-around">
+        <div className="text-center text-xs text-gray-700">
+          <div>🏠</div>
+          <span>Home</span>
+        </div>
+        <div className="text-center text-xs text-gray-700">
+          <div>📝</div>
+          <span>Cadastro</span>
+        </div>
+        <div className="text-center text-xs text-gray-700">
+          <div>🏍️</div>
+          <span>Motos</span>
+        </div>
+        <div className="text-center text-green-600 text-xs font-bold">
+          <div>🗺️</div>
+          <span>Mapa</span>
+        </div>
       </footer>
-    </section>
+    </div>
   );
 }
