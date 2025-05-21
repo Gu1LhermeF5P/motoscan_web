@@ -22,7 +22,6 @@ const motosMock: Moto[] = [
   { id: 2, zona: "C", status: "BO" },
   { id: 3, zona: "C", status: "BO" },
   { id: 4, zona: "E", status: "MECANICO" },
-
 ];
 
 export default function MapaPatio() {
@@ -39,14 +38,25 @@ export default function MapaPatio() {
   };
 
   const renderQuadrado = (moto: Moto, i: number) => {
-    if (filtro !== "TODOS" && moto.status !== filtro && moto.status !== "VAZIA") {
+    if (moto.status === "VAZIA") {
+      return (
+        <div
+          key={i}
+          className={`w-8 h-8 rounded ${statusColors[moto.status]} cursor-default`}
+          title="Vazio"
+        />
+      );
+    }
+
+    if (filtro !== "TODOS" && moto.status !== filtro) {
       return null;
     }
+
     return (
       <div
         key={i}
         className={`w-8 h-8 rounded ${statusColors[moto.status]} cursor-pointer transition hover:scale-105`}
-        title={moto.status !== "VAZIA" ? `Status: ${moto.status}` : "Vazio"}
+        title={`Status: ${moto.status}`}
       />
     );
   };
@@ -82,7 +92,6 @@ export default function MapaPatio() {
           MECANICO
         </button>
       </div>
-
 
       <button
         onClick={() => setFiltro("TODOS")}
